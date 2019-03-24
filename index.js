@@ -4,6 +4,8 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
 
+//Puhelinluettelo Backend
+
 app.use(bodyParser.json())
 app.use(cors())
 morgan.token('DATA', function (req, res) {
