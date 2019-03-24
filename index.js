@@ -3,12 +3,13 @@ const app = express()
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
+const static = require('static')
 
 //Puhelinluettelo Backend
 
 app.use(bodyParser.json())
 app.use(cors())
-app.use(static('build'))
+app.use(express.static('build'))
 morgan.token('DATA', function (req, res) {
     if (req.method === 'POST') {
         return JSON.stringify(req.body)
