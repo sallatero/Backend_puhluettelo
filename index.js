@@ -8,6 +8,7 @@ const morgan = require('morgan')
 
 app.use(bodyParser.json())
 app.use(cors())
+app.use(static('build'))
 morgan.token('DATA', function (req, res) {
     if (req.method === 'POST') {
         return JSON.stringify(req.body)
