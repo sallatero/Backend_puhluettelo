@@ -1,9 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
 const static = require('static')
+const Person = require('./models/person')
 
 //Puhelinluettelo Backend
 
@@ -28,101 +30,111 @@ app.use(morgan(function (tokens, req, res) {
     ].join(' ')
 }))
 
-let persons = [
-    {
-        name: "Martti Tienari",
-        number: "040-123456",
-        id: 1
-    },
-    {
-        name: "Arto Järvinen",
-        number: "040-123456",
-        id: 2
-    },
-    {
-        name: "Arto Häkkinen",
-        number: "050-323535345",
-        id: 3
-    },
-    {
-        name: "Pekka Salonen",
-        number: "09-124847535",
-        id: 4
-    }
-]
-
+/*
 app.get('/info/', (req, res) => {
     const date = new Date()
-    res.send(`<p>Puhelinluettelossa on ${persons.length} henkilön tiedot</p>
-    <p>${date}</p>`)
+    Person.countDocuments({}, (err, count) => {
+        res.send(`<p>Puhelinluettelossa on ${count} henkilön tiedot</p>
+        <p>${date}</p>`)
+    })
+})
+*/
+app.get('/api/persons', (req, res) => {
+    //res.json(persons)
+    Person.find({})
+    .then(all => {
+        console.log('res.json rivi 46');
+        res.json(all.map(p => p.toJSON()))
+        return
+    })
+    .catch(error => {
+        console.log(error)
+        console.log('res.status(404).end rivi 52');
+        res.status(404).end()
+    })
 })
 
-app.get('/api/persons', (req, res) => {
-    res.json(persons)
-})
 //Palauttaa id:n mukaisen resurssin, jos se löytyy, muuten 404 not found
 app.get('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id)
-    const person = persons.find(p => p.id === id)
-
-    if(person) {
-        res.json(person)
-    } else {
+    
+    Person.find({id: id})
+    .then(pers => {
+        console.log('res.json rivi 63');
+        res.json(pers.toJSON())
+        return
+    })
+    .catch(error => {
+        console.log(error)
+        console.log('res.status(404).end rivi 69');
         res.status(404).end()
-    }
+    })
 })
+
 //Poistaa id:n mukaisen resurssin, jos se on olemassa, muuten 404 
+/*
 app.delete('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id)
-    const person = persons.find(p => p.id === id)
-
-    if(person) {//Jos resurssi löytyi, poistetaan se ja vastataan 204
-        persons = persons.filter(p => p.id !== id)
-        res.status(204).end()
-    } else {
-        res.status(404).end()
-    }    
+    //const person = persons.find(p => p.id === id)
+    Person.findById(req.params.id)
+        .then(pers => {
+            console.log('tietokannasta löytyi id:llä ', id);
+            res.json(pers.toJSON())
+        })
+        
+       .catch(error => {
+            console.log(error)
+            res.status(404).end()
+        })
 })
+*/
+
 //Lisää tietojen mukaisen resurssin
 app.post('/api/persons', (req, res) => {
     const body = req.body
 
     if (!body.name || !body.number) {
-        return res.status(400).json({
+        console.log('res.status(400).json rivi 97');
+        return res.status(400).json({ //res.json->FINISHED
             error: 'content missing'
         })
     }
 
-    const found = persons.find(p => p.name === body.name)
-    
-    if(found) {
-        return res.status(400).json({
-            error: 'name must be unique'
-        })
-    }
-
+    //Tarkistaa onko nimi jo tietokannassa
+    /*
+    Person.find({name: body.name}).then(found => {
+        if (found !== undefined) { //Ei toimi! found on []
+            return res.status(400).json({ //res.json->FINISHED
+                error: 'name must be unique'
+            })
+        }
+    })
+    */
+  
     generateId = () => {
-        // Math.floor(Math.random() * (max-min+1)) + min;
         return Math.floor(Math.random() * 10000);
     }
 
-    const person = {
+    const newPerson = new Person({
         name: body.name,
         number: body.number,
         id: generateId()
-    }
-
-    persons = persons.concat(person)
-    res.json(person)
+    })
+    newPerson.save()
+    .then(savedP => {
+        const jsonP = savedP.toJSON()
+        console.log('res.status(200).json rivi 124');
+        res.status(200).json(jsonP)
+        return
+    })
+    .catch(error => {
+        console.log(error)
+        console.log('res.status(404) rivi 133');
+        return res.status(404)
+    })
 })
-/*
-app.post('/api/persons', (req, res) => {
-    const person = req.body
-    console.log(person)
-})*/
 
-
-const port = process.env.PORT || 3001
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`)
+const PORT = process.env.PORT
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
 })
