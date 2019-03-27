@@ -123,7 +123,7 @@ app.post('/api/persons', (req, res, next) => {
         res.status(200).json(jsonP)
     })
     .catch(error => {
-        console.log('käyttäjänimi ei ole uniikki')
+        console.log('validaatiovirhe app.post')
         next(error)
     })
 })
@@ -148,12 +148,13 @@ app.put('/api/persons/:id', (req, res, next) => {
 
 //Error handler
 const errorHandler = (error, req, res, next) => {
-    console.log(error.message)
     if (error.name === 'CastError' && error.kind == 'ObjectId') {
+        console.log('errorhandleristä cast error')
         return res.status(400).send({error: 'malformatted id'})
     }
     if (error.name === 'ValidationError') {
-        return res.status(400).send({error: error.errors.name.message})
+        console.log(error.message)
+        return res.status(400).send({error: error.message})
     }
     next(error)
 }

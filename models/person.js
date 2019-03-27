@@ -27,8 +27,17 @@ mongoose.connect(url, {useNewUrlParser: true})
 
 //Samalla nimellä ei voi olla useampia numeroita
 const personSchema = new mongoose.Schema({
-    name: {type: String, required: true, unique: true},
-    number: {type: String, required: true}
+    name: {
+        type: String, 
+        minlength: [3, 'Nimen tulee olla vähintään 3 merkkiä pitkä.'], 
+        required: [true, 'Nimi ei voi olla tyhjä.'], 
+        unique: [true, 'Nimen täytyy olla uniikki.']
+    },
+    number: {
+        type: String, 
+        minlength: [8, 'Numeron tulee olla vähintään 8 merkkiä pitkä'], 
+        required: [true, 'Numero ei voi olla tyhjä.']
+    }
 })
 personSchema.plugin(uniqueValidator)
 
