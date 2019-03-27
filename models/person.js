@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const uniqueValidator = require('mongoose-unique-validator')
 
 //process.argv on taulukko, jossa käynnistyksessä annetut parametrit
 //indeksit 0-1 on polkuja ja esim salasana on indeksillä 2.
@@ -10,6 +11,7 @@ const password = process.argv[2]
 */
 
 mongoose.set('useFindAndModify', false)
+mongoose.set('useCreateIndex', true)
 
 const url = process.env.MONGODB_URI
 
@@ -23,12 +25,14 @@ mongoose.connect(url, {useNewUrlParser: true})
     console.log('error connecting to MongoDB: ', error.message);
 })
 
+//Samalla nimellä ei voi olla useampia numeroita
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String
+    name: {type: String, required: true, unique: true},
+    number: {type: String, required: true}
 })
+personSchema.plugin(uniqueValidator)
 
-    //Määritellään skeemalle "funktio" toJSON, joka muokkaa 
+//Määritellään skeemalle "funktio" toJSON, joka muokkaa 
 //tietokannasta tulevaa dokumenttia haluamaamme muotoon
 personSchema.set('toJSON', {
     transform: (doc, returnedObj) => {

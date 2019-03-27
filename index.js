@@ -40,7 +40,7 @@ app.get('/info/', (req, res) => {
     })
 })
 
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
     //res.json(persons)
     Person.find({})
     .then(all => {
@@ -71,7 +71,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 })
 
 //Poistaa id:n mukaisen resurssin, jos se on olemassa, muuten 404 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndRemove(req.params.id)
         .then(person => {
             if (person) {
@@ -88,7 +88,7 @@ app.delete('/api/persons/:id', (req, res) => {
 })
 
 //Lisää tietojen mukaisen resurssin
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const body = req.body
 
     if (!body.name || !body.number) {
@@ -123,7 +123,7 @@ app.post('/api/persons', (req, res) => {
         res.status(200).json(jsonP)
     })
     .catch(error => {
-        console.log(error)
+        console.log('käyttäjänimi ei ole uniikki')
         next(error)
     })
 })
@@ -151,6 +151,9 @@ const errorHandler = (error, req, res, next) => {
     console.log(error.message)
     if (error.name === 'CastError' && error.kind == 'ObjectId') {
         return res.status(400).send({error: 'malformatted id'})
+    }
+    if (error.name === 'ValidationError') {
+        return res.status(400).send({error: error.errors.name.message})
     }
     next(error)
 }
