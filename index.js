@@ -72,22 +72,17 @@ app.get('/api/persons/:id', (req, res) => {
 })
 
 //Poistaa id:n mukaisen resurssin, jos se on olemassa, muuten 404 
-/*
 app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    //const person = persons.find(p => p.id === id)
-    Person.findById(req.params.id)
-        .then(pers => {
-            console.log('tietokannasta löytyi id:llä ', id);
-            res.json(pers.toJSON())
+    Person.findByIdAndRemove(req.params.id)
+        .then(person => {
+            console.log('tietokannasta löytyi id:llä ', req.params.id);
+            res.status(204).end()
         })
-        
        .catch(error => {
-            console.log(error)
-            res.status(404).end()
+            console.log('Error in delete')
+            next(error)
         })
 })
-*/
 
 //Lisää tietojen mukaisen resurssin
 app.post('/api/persons', (req, res) => {

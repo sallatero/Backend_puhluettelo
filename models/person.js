@@ -9,6 +9,8 @@ const mongoose = require('mongoose')
 const password = process.argv[2]
 */
 
+mongoose.set('useFindAndModify', false)
+
 const url = process.env.MONGODB_URI
 
 console.log('connecting to', url);
