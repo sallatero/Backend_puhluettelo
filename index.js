@@ -1,10 +1,13 @@
-require('dotenv').config()
+//require('dotenv').config()
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
-const static = require('static')
+//const static = require('static')
 const Person = require('./models/person')
 
 //Puhelinluettelo Backend
@@ -53,7 +56,7 @@ app.get('/api/persons', (req, res, next) => {
     })
 })
 
-//Palauttaa id:n mukaisen resurssin, jos se löytyy, muuten 404 not found
+//Palauttaa id:n mukaisen resurssin, jos se löytyy, muuten 204 not found
 app.get('/api/persons/:id', (req, res, next) => {
     Person.findById(req.params.id)
     .then(pers => {
